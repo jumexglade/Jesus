@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Slider Puzzle Game</title>
+  <style>
+    #puzzle-container {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-gap: 10px;
+      width: 320px;
+      margin: 0 auto;
+    }
+
+    .puzzle-tile {
+      width: 100px;
+      height: 100px;
+      border: 1px solid black;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      cursor: pointer;
+      background-color: lightgray;
+      color: black;
+    }
+  </style>
+</head>
+<body>
+  <h1>Slider Puzzle Game</h1>
+  <div id="puzzle-container">
+    <div class="puzzle-tile" onclick="moveTile(0)"></div>
+    <div class="puzzle-tile" onclick="moveTile(1)"></div>
+    <div class="puzzle-tile" onclick="moveTile(2)"></div>
+    <div class="puzzle-tile" onclick="moveTile(3)"></div>
+    <div class="puzzle-tile" onclick="moveTile(4)"></div>
+    <div class="puzzle-tile" onclick="moveTile(5)"></div>
+    <div class="puzzle-tile" onclick="moveTile(6)"></div>
+    <div class="puzzle-tile" onclick="moveTile(7)"></div>
+    <div class="puzzle-tile" onclick="moveTile(8)"></div>
+  </div>
+
+  <script>
+    var puzzleGrid = document.getElementById("puzzle-container");
+    var puzzleTiles = puzzleGrid.getElementsByClassName("puzzle-tile");
+    var puzzleSize = 3;
+
+    // Function to create a random solvable puzzle grid
+    function createSolvablePuzzle(size) {
+      var numbers = Array.from({ length: size * size - 1 }, (_, i) => i + 1);
+      numbers.push(null);
+
+      // Shuffle the numbers until a solvable configuration is found
+      var isSolvable = false;
+      while (!isSolvable) {
+        numbers.sort(() => Math.random() - 0.5);
+        isSolvable = isPuzzleSolvable(numbers, size);
+      }
+
+      var puzzle = [];
+      for (var i = 0; i < numbers.length; i += size) {
+        puzzle.push(numbers.slice(i, i + size));
+      }
+      return puzzle;
+    }
+
+    // Function to check if the puzzle configuration is solvable
+    function isPuzzleSolvable(numbers, size) {
+      var inversionCount = 0;
+      for (var i = 0; i < numbers.length - 1; i++) {
+        for (var j = i + 1; j < numbers.length; j++) {
+          if (numbers[j] !== null && numbers[i] !== null && numbers[i] > numbers[j]) {
+            inversionCount++;
+          }
+        }
+      }
+      var blankRowFromBottom = Math.floor(numbers.indexOf(null) / size) + 1;
+      return (size % 2 === 1 && inversionCount % 2 === 0) || (size % 2 === 0 && (inversionCount + blankRowFromBottom) % 2 === 1);
+    }
+
+    // Function to update the puzzle grid visually
+    function updatePuzzleGrid(puzzle) {
+      for (var i = 0; i < puzzleSize; i++) {
+        for (var j = 0; j < puzzleSize; j++) {
+          var tileIndex = i * puzzleSize + j;
+          if (puzzle[i][j] === null) {
+            puzzleTiles[tileIndex].innerText = "";
+          } else {
+            puzzleTiles[tileIndex].innerText = puzzle[i][j];
+          }
+        }
+      }
+    }
+
+    // Function to find the coordinates of the empty space
+    function findEmptySpace(puzzle) {
+      for (var i = 0; i < puzzle.length; i++) {
+        for (var j = 0; j < puzzle[i].length; j++) {
+          if (puzzle[i][j] === null) {
+            return { row: i, col: j };
+          }
+        }
+      }
+    }
+
+    // Function to check if the puzzle is solved
+    function isSolved(puzzle) {
+      var size = puzzle.length;
+      var numbers = puzzle.flat();
+      return numbers.slice(0, -1).every((num, index) => num === index + 1);
+    }
+
+    // Function to perform a move in the puzzle
+    function performMove(puzzle, row, col) {
+      var emptySpace = findEmptySpace(puzzle);
+      var i = emptySpace.row;
+      var j = emptySpace.col;
+      var size = puzzle.length;
+
+      if (
+        (row === i - 1 && col === j) || // Move up
+        (row === i + 1 && col === j) || // Move down
+        (row === i && col === j - 1) || // Move left
+        (row === i && col === j + 1)    // Move right
+      ) {
+        [puzzle[i][j], puzzle[row][col]] = [puzzle[row][col], puzzle[i][j]];
+      }
+    }
+
+    // Function to handle tile movement
+    function moveTile(tileIndex) {
+      var row = Math.floor(tileIndex / puzzleSize);
+      var col = tileIndex % puzzleSize;
+      performMove(puzzle, row, col);
+      updatePuzzleGrid(puzzle);
+      if (isSolved(puzzle)) {
+        alert("Congratulations! You solved the puzzle. sorry if that was hard :) ily! copy and paste that link in a new tab        https://jumexglade.github.io/Katie/ILY.html");
+      }
+    }
+
+    // Start the game
+    var puzzle = createSolvablePuzzle(puzzleSize);
+    updatePuzzleGrid(puzzle);
+  </script>
+</body>
+</html>
